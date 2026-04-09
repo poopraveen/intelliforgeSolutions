@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Zap, Mail, Phone, MapPin, ArrowRight } from "lucide-react";
 import { products } from "@/lib/data";
