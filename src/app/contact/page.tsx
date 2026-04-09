@@ -9,7 +9,9 @@ import {
   MapPin,
   Clock,
   CheckCircle,
+  User,
 } from "lucide-react";
+import { companyInfo } from "@/lib/data";
 
 function useReveal() {
   useEffect(() => {
@@ -118,8 +120,19 @@ export default function ContactPage() {
                   Get in Touch
                 </h3>
                 <div className="flex flex-col gap-5">
+                  <div className="flex items-start gap-3">
+                    <div className="feature-icon shrink-0">
+                      <User className="w-4 h-4 text-indigo-400" />
+                    </div>
+                    <div>
+                      <div className="text-xs text-slate-500 mb-0.5">Founder</div>
+                      <div className="text-sm font-medium text-slate-200">
+                        {companyInfo.founder}
+                      </div>
+                    </div>
+                  </div>
                   <a
-                    href="mailto:hello@intelliforgesolutions.com"
+                    href={`mailto:${companyInfo.email}`}
                     className="flex items-start gap-3 group"
                   >
                     <div className="feature-icon shrink-0">
@@ -128,18 +141,18 @@ export default function ContactPage() {
                     <div>
                       <div className="text-xs text-slate-500 mb-0.5">Email</div>
                       <div className="text-sm font-medium text-slate-200 group-hover:text-indigo-300 transition-colors">
-                        hello@intelliforgesolutions.com
+                        {companyInfo.email}
                       </div>
                     </div>
                   </a>
-                  <a href="tel:+919999999999" className="flex items-start gap-3 group">
+                  <a href={`tel:${companyInfo.phone}`} className="flex items-start gap-3 group">
                     <div className="feature-icon shrink-0">
                       <Phone className="w-4 h-4 text-indigo-400" />
                     </div>
                     <div>
                       <div className="text-xs text-slate-500 mb-0.5">Phone</div>
                       <div className="text-sm font-medium text-slate-200 group-hover:text-indigo-300 transition-colors">
-                        +91 99999 99999
+                        {companyInfo.phoneDisplay}
                       </div>
                     </div>
                   </a>
@@ -150,7 +163,7 @@ export default function ContactPage() {
                     <div>
                       <div className="text-xs text-slate-500 mb-0.5">Office</div>
                       <div className="text-sm font-medium text-slate-200">
-                        Mumbai, Maharashtra, India
+                        {companyInfo.address.full}
                       </div>
                     </div>
                   </div>
@@ -163,7 +176,7 @@ export default function ContactPage() {
                         Business Hours
                       </div>
                       <div className="text-sm font-medium text-slate-200">
-                        Mon–Sat, 9:00 AM – 7:00 PM IST
+                        {companyInfo.hours}
                       </div>
                     </div>
                   </div>
@@ -484,9 +497,9 @@ export default function ContactPage() {
           <h2 className="reveal delay-100 text-2xl font-bold text-white mb-6">
             Talk to a real person on our team.
           </h2>
-          <a href="mailto:hello@intelliforgesolutions.com" className="btn-primary">
+          <a href={`mailto:${companyInfo.email}`} className="btn-primary">
             <Mail className="w-4 h-4" />
-            <span>hello@intelliforgesolutions.com</span>
+            <span>{companyInfo.email}</span>
           </a>
         </div>
       </section>

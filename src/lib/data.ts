@@ -368,6 +368,27 @@ export const trustSignals = [
   { icon: "🤖", label: "Continuously Learning AI", desc: "Models improve with every interaction" },
 ];
 
+// ─── Company Contact Info ──────────────────────────────────────────────────
+export const companyInfo = {
+  name: "IntelliForge Solutions",
+  founder: "Praveen Kumar Yoganathan",
+  email: "pooprav26@gmail.com",
+  phone: "+91 8056497843",
+  phoneDisplay: "+91 80564 97843",
+  address: {
+    street: "No 7, Nehru Street",
+    area: "Veppampattu",
+    city: "Chennai",
+    state: "Tamil Nadu",
+    pincode: "602024",
+    country: "India",
+    full: "No 7, Nehru Street, Veppampattu, Chennai - 602024, Tamil Nadu, India",
+  },
+  hours: "Mon–Sat, 9:00 AM – 7:00 PM IST",
+  website: "https://intelliforge-solutions.vercel.app",
+  tagline: "Building Intelligent Systems for Every Industry",
+};
+
 // ─── Navigation Links ──────────────────────────────────────────────────────
 export const navLinks = [
   { label: "Home", href: "/" },

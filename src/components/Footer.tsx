@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Zap, Mail, Phone, MapPin, ArrowRight } from "lucide-react";
-import { products } from "@/lib/data";
+import { products, companyInfo } from "@/lib/data";
 
 export default function Footer() {
   const productLinks = products.map((p) => ({
@@ -62,28 +62,33 @@ export default function Footer() {
                 </span>
               </div>
             </Link>
-            <p className="text-slate-500 text-sm leading-relaxed mb-6">
-              Building Intelligent Systems for Every Industry. AI-powered SaaS
-              solutions across legal, healthcare, finance, fitness, and media.
+            <p className="text-slate-500 text-sm leading-relaxed mb-1">
+              {companyInfo.tagline}
+            </p>
+            <p className="text-slate-600 text-xs mb-6">
+              Founded by{" "}
+              <span className="text-indigo-400 font-medium">
+                {companyInfo.founder}
+              </span>
             </p>
             <div className="flex flex-col gap-3">
               <a
-                href="mailto:hello@intelliforgesolutions.com"
+                href={`mailto:${companyInfo.email}`}
                 className="flex items-center gap-2.5 text-sm text-slate-500 hover:text-indigo-400 transition-colors"
               >
                 <Mail className="w-4 h-4 shrink-0" />
-                hello@intelliforgesolutions.com
+                {companyInfo.email}
               </a>
               <a
-                href="tel:+919999999999"
+                href={`tel:${companyInfo.phone}`}
                 className="flex items-center gap-2.5 text-sm text-slate-500 hover:text-indigo-400 transition-colors"
               >
                 <Phone className="w-4 h-4 shrink-0" />
-                +91 99999 99999
+                {companyInfo.phoneDisplay}
               </a>
               <div className="flex items-start gap-2.5 text-sm text-slate-500">
                 <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>Mumbai, Maharashtra, India</span>
+                <span>{companyInfo.address.full}</span>
               </div>
             </div>
           </div>

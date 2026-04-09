@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, Zap, Target, Eye, Heart, Layers } from "lucide-react";
+import { companyInfo } from "@/lib/data";
 
 function useReveal() {
   useEffect(() => {
@@ -186,14 +187,17 @@ export default function AboutPage() {
                 </p>
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-lg font-bold text-white">
-                    IF
+                    PK
                   </div>
                   <div>
                     <div className="text-sm font-bold text-white">
-                      IntelliForge Founding Team
+                      {companyInfo.founder}
                     </div>
                     <div className="text-xs text-slate-500">
-                      Builders · Operators · AI Researchers
+                      Founder &amp; CEO · IntelliForge Solutions
+                    </div>
+                    <div className="text-xs text-slate-600 mt-0.5">
+                      Chennai, Tamil Nadu, India
                     </div>
                   </div>
                 </div>
