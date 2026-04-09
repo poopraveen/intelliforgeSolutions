@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import { google } from "googleapis";
 
 // ─── Types ────────────────────────────────────────────────────────────────
 interface ContactPayload {
@@ -15,212 +14,170 @@ interface ContactPayload {
 
 // ─── 1. Gmail via Nodemailer ───────────────────────────────────────────────
 async function sendGmail(data: ContactPayload) {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    throw new Error("Gmail env vars not configured.");
+  }
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: process.env.GMAIL_USER,           // pooprav26@gmail.com
-      pass: process.env.GMAIL_APP_PASSWORD,   // 16-char App Password
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
     },
   });
 
-  const html = `
+  const timestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+
+  // ── Notification email to Praveen ──────────────────────────────────────
+  const notifyHtml = `
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #05050f; margin: 0; padding: 0; }
-    .wrapper { max-width: 600px; margin: 0 auto; background: #0d0d1f; border-radius: 16px; overflow: hidden; }
-    .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 32px; text-align: center; }
-    .header h1 { color: white; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
-    .header p { color: rgba(255,255,255,0.75); margin: 6px 0 0; font-size: 13px; }
-    .body { padding: 32px; }
-    .badge { display: inline-block; background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.25); border-radius: 100px; padding: 4px 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 20px; }
-    .field { margin-bottom: 16px; }
-    .field label { display: block; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-    .field p { margin: 0; font-size: 14px; color: #e2e8f0; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 10px 14px; word-break: break-word; }
-    .field p.message { white-space: pre-wrap; line-height: 1.6; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .cta { margin-top: 28px; text-align: center; }
-    .cta a { display: inline-block; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; text-decoration: none; padding: 13px 28px; border-radius: 12px; font-size: 14px; font-weight: 700; }
-    .footer { background: #060610; padding: 20px 32px; text-align: center; }
-    .footer p { color: #334155; font-size: 12px; margin: 0; }
-  </style>
+<meta charset="utf-8"/>
+<style>
+  body{margin:0;padding:0;background:#05050f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .wrap{max-width:600px;margin:0 auto;background:#0d0d1f;border-radius:16px;overflow:hidden;}
+  .head{background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:32px;text-align:center;}
+  .head h1{color:#fff;margin:0;font-size:22px;font-weight:800;}
+  .head p{color:rgba(255,255,255,.7);margin:6px 0 0;font-size:13px;}
+  .body{padding:32px;}
+  .badge{display:inline-block;background:rgba(99,102,241,.15);color:#818cf8;border:1px solid rgba(99,102,241,.25);border-radius:100px;padding:4px 14px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:22px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .field label{display:block;font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;}
+  .field p{margin:0;font-size:14px;color:#e2e8f0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 14px;}
+  .msg p{white-space:pre-wrap;line-height:1.7;}
+  .cta{margin-top:28px;text-align:center;}
+  .cta a{display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;text-decoration:none;padding:13px 30px;border-radius:12px;font-size:14px;font-weight:700;}
+  .foot{background:#060610;padding:18px 32px;text-align:center;}
+  .foot p{color:#334155;font-size:11px;margin:0;}
+</style>
 </head>
 <body>
-  <div class="wrapper">
-    <div class="header">
-      <h1>⚡ New Demo Request</h1>
-      <p>IntelliForge Solutions · ${new Date().toLocaleDateString("en-IN", { dateStyle: "full" })}</p>
+<div class="wrap">
+  <div class="head">
+    <h1>🚀 New Demo Request</h1>
+    <p>IntelliForge Solutions &nbsp;·&nbsp; ${timestamp} IST</p>
+  </div>
+  <div class="body">
+    <span class="badge">🔔 Incoming Lead</span>
+    <div class="grid">
+      <div class="field"><label>Full Name</label><p>${data.name}</p></div>
+      <div class="field"><label>Email</label><p>${data.email}</p></div>
     </div>
-    <div class="body">
-      <span class="badge">🔔 Incoming Lead</span>
-
-      <div class="grid">
-        <div class="field">
-          <label>Full Name</label>
-          <p>${data.name}</p>
-        </div>
-        <div class="field">
-          <label>Email</label>
-          <p>${data.email}</p>
-        </div>
-      </div>
-
-      <div class="grid">
-        <div class="field">
-          <label>Phone</label>
-          <p>${data.phone || "Not provided"}</p>
-        </div>
-        <div class="field">
-          <label>Company</label>
-          <p>${data.companyName || "Not provided"}</p>
-        </div>
-      </div>
-
-      <div class="grid">
-        <div class="field">
-          <label>Business Type</label>
-          <p>${data.businessType}</p>
-        </div>
-        <div class="field">
-          <label>Product Interested In</label>
-          <p>${data.product || "Not specified"}</p>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Message</label>
-        <p class="message">${data.message || "No message provided."}</p>
-      </div>
-
-      <div class="cta">
-        <a href="mailto:${data.email}?subject=Re: Your IntelliForge Demo Request">
-          Reply to ${data.name.split(" ")[0]} →
-        </a>
-      </div>
+    <div class="grid">
+      <div class="field"><label>Phone</label><p>${data.phone || "—"}</p></div>
+      <div class="field"><label>Company</label><p>${data.companyName || "—"}</p></div>
     </div>
-    <div class="footer">
-      <p>IntelliForge Solutions · pooprav26@gmail.com · +91 8056497843</p>
-      <p style="margin-top:4px;">No 7, Nehru Street, Veppampattu, Chennai – 602024</p>
+    <div class="grid">
+      <div class="field"><label>Business Type</label><p>${data.businessType}</p></div>
+      <div class="field"><label>Product Interest</label><p>${data.product || "—"}</p></div>
+    </div>
+    <div class="field msg" style="margin-top:12px;">
+      <label>Message</label>
+      <p>${data.message || "No message provided."}</p>
+    </div>
+    <div class="cta">
+      <a href="mailto:${data.email}?subject=Re: Your IntelliForge Demo Request&body=Hi ${encodeURIComponent(data.name.split(" ")[0])},%0A%0AThank you for your interest in IntelliForge Solutions.%0A%0A">
+        Reply to ${data.name.split(" ")[0]} →
+      </a>
     </div>
   </div>
+  <div class="foot">
+    <p>IntelliForge Solutions &nbsp;·&nbsp; Praveen Kumar Yoganathan</p>
+    <p>pooprav26@gmail.com &nbsp;·&nbsp; +91 8056497843</p>
+  </div>
+</div>
 </body>
 </html>`;
 
-  await transporter.sendMail({
-    from: `"IntelliForge Solutions" <${process.env.GMAIL_USER}>`,
-    to: process.env.GMAIL_USER,                 // send to yourself
-    replyTo: data.email,                         // reply goes to lead
-    subject: `🚀 New Demo Request — ${data.name} (${data.businessType})`,
-    html,
-  });
-
-  // Auto-confirmation email to the lead
-  await transporter.sendMail({
-    from: `"Praveen Kumar – IntelliForge" <${process.env.GMAIL_USER}>`,
-    to: data.email,
-    subject: `We received your demo request, ${data.name.split(" ")[0]}!`,
-    html: `
+  // ── Auto-reply to the lead ─────────────────────────────────────────────
+  const confirmHtml = `
 <!DOCTYPE html>
 <html>
 <head>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #05050f; margin: 0; padding: 0; }
-    .wrapper { max-width: 560px; margin: 0 auto; background: #0d0d1f; border-radius: 16px; overflow: hidden; }
-    .header { background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 32px; text-align: center; }
-    .header h1 { color: white; margin: 0; font-size: 22px; font-weight: 800; }
-    .body { padding: 32px; color: #94a3b8; font-size: 15px; line-height: 1.7; }
-    .body strong { color: #e2e8f0; }
-    .highlight { background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2); border-radius: 12px; padding: 18px; margin: 20px 0; color: #e2e8f0; font-size: 14px; }
-    .footer { background: #060610; padding: 20px 32px; text-align: center; color: #334155; font-size: 12px; }
-  </style>
+<meta charset="utf-8"/>
+<style>
+  body{margin:0;padding:0;background:#05050f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .wrap{max-width:560px;margin:0 auto;background:#0d0d1f;border-radius:16px;overflow:hidden;}
+  .head{background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:32px;text-align:center;}
+  .head h1{color:#fff;margin:0;font-size:22px;font-weight:800;}
+  .body{padding:32px;color:#94a3b8;font-size:15px;line-height:1.75;}
+  .body strong{color:#e2e8f0;}
+  .box{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:12px;padding:18px;margin:20px 0;font-size:14px;color:#c7d2fe;}
+  .box b{color:#e2e8f0;}
+  .sig{margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.06);}
+  .foot{background:#060610;padding:18px 32px;text-align:center;color:#334155;font-size:11px;}
+</style>
 </head>
 <body>
-  <div class="wrapper">
-    <div class="header">
-      <h1>✅ Request Confirmed</h1>
+<div class="wrap">
+  <div class="head"><h1>✅ We Got Your Request!</h1></div>
+  <div class="body">
+    <p>Hi <strong>${data.name.split(" ")[0]}</strong>,</p>
+    <p>Thank you for reaching out to <strong>IntelliForge Solutions</strong>. We&apos;ve received your demo request and will get back to you within <strong>4 business hours</strong>.</p>
+    <div class="box">
+      <b>Your Request Summary</b><br/><br/>
+      📋 Business Type: ${data.businessType}<br/>
+      📦 Product Interest: ${data.product || "To be discussed"}<br/>
+      🕐 Submitted: ${timestamp} IST
     </div>
-    <div class="body">
-      <p>Hi <strong>${data.name.split(" ")[0]}</strong>,</p>
-      <p>Thank you for reaching out to <strong>IntelliForge Solutions</strong>. We've received your demo request and our team will get back to you within <strong>4 business hours</strong>.</p>
-      <div class="highlight">
-        <strong>What you submitted:</strong><br />
-        Business type: ${data.businessType}<br />
-        Product of interest: ${data.product || "To be discussed"}<br />
-        Request received: ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST
-      </div>
-      <p>In the meantime, feel free to explore our products at <a href="https://intelliforge-solutions.vercel.app/products" style="color:#818cf8;">intelliforge-solutions.vercel.app</a>.</p>
-      <p>Looking forward to connecting,<br /><strong style="color:#e2e8f0;">Praveen Kumar Yoganathan</strong><br /><span style="font-size:13px;color:#64748b;">Founder & CEO, IntelliForge Solutions</span></p>
-    </div>
-    <div class="footer">
-      <p>+91 8056497843 · pooprav26@gmail.com</p>
-      <p>No 7, Nehru Street, Veppampattu, Chennai – 602024</p>
+    <p>While you wait, explore all our AI products at <a href="https://intelliforge-solutions.vercel.app/products" style="color:#818cf8;">our products page</a>.</p>
+    <div class="sig">
+      <strong>Praveen Kumar Yoganathan</strong><br/>
+      <span style="font-size:13px;color:#64748b;">Founder &amp; CEO, IntelliForge Solutions</span><br/>
+      <span style="font-size:13px;color:#64748b;">+91 8056497843 &nbsp;·&nbsp; pooprav26@gmail.com</span>
     </div>
   </div>
+  <div class="foot">
+    <p>IntelliForge Solutions · No 7, Nehru Street, Veppampattu, Chennai – 602024</p>
+  </div>
+</div>
 </body>
-</html>`,
-  });
+</html>`;
+
+  await Promise.all([
+    transporter.sendMail({
+      from: `"IntelliForge Solutions" <${process.env.GMAIL_USER}>`,
+      to: process.env.GMAIL_USER,
+      replyTo: data.email,
+      subject: `🚀 Demo Request — ${data.name} · ${data.businessType}`,
+      html: notifyHtml,
+    }),
+    transporter.sendMail({
+      from: `"Praveen Kumar – IntelliForge" <${process.env.GMAIL_USER}>`,
+      to: data.email,
+      subject: `We received your demo request, ${data.name.split(" ")[0]}! ✅`,
+      html: confirmHtml,
+    }),
+  ]);
 }
 
-// ─── 2. Google Sheets ──────────────────────────────────────────────────────
-async function appendToSheet(data: ContactPayload) {
-  const auth = new google.auth.GoogleAuth({
-    credentials: {
-      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    },
-    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-  });
-
-  const sheets = google.sheets({ version: "v4", auth });
-
-  const timestamp = new Date().toLocaleString("en-IN", {
-    timeZone: "Asia/Kolkata",
-  });
-
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: process.env.GOOGLE_SHEET_ID,
-    range: "Leads!A:I",          // Sheet tab named "Leads"
-    valueInputOption: "USER_ENTERED",
-    requestBody: {
-      values: [
-        [
-          timestamp,
-          data.name,
-          data.email,
-          data.phone || "",
-          data.companyName || "",
-          data.businessType,
-          data.product || "",
-          data.message || "",
-          "New",                  // Status column — manually update to "Contacted", "Closed" etc.
-        ],
-      ],
-    },
-  });
-}
-
-// ─── 3. Telegram ──────────────────────────────────────────────────────────
+// ─── 2. Telegram ──────────────────────────────────────────────────────────
 async function sendTelegram(data: ContactPayload) {
   const token  = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
-  const text = `
-🚀 *New Demo Request — IntelliForge*
+  if (!token || !chatId) {
+    throw new Error("Telegram env vars not configured.");
+  }
 
-👤 *Name:* ${data.name}
-📧 *Email:* ${data.email}
-📱 *Phone:* ${data.phone || "Not provided"}
-🏢 *Company:* ${data.companyName || "Not provided"}
-🏭 *Business Type:* ${data.businessType}
-📦 *Product Interest:* ${data.product || "Not specified"}
+  const timestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
 
-💬 *Message:*
-${data.message || "_No message provided_"}
-
-🕐 ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST
-  `.trim();
+  const text = [
+    `🚀 *New Demo Request — IntelliForge*`,
+    ``,
+    `👤 *Name:* ${data.name}`,
+    `📧 *Email:* ${data.email}`,
+    `📱 *Phone:* ${data.phone || "Not provided"}`,
+    `🏢 *Company:* ${data.companyName || "Not provided"}`,
+    `🏭 *Industry:* ${data.businessType}`,
+    `📦 *Product:* ${data.product || "Not specified"}`,
+    ``,
+    `💬 *Message:*`,
+    data.message || "_No message_",
+    ``,
+    `🕐 ${timestamp} IST`,
+  ].join("\n");
 
   const res = await fetch(
     `https://api.telegram.org/bot${token}/sendMessage`,
@@ -237,8 +194,49 @@ ${data.message || "_No message provided_"}
 
   if (!res.ok) {
     const err = await res.json();
-    throw new Error(`Telegram error: ${JSON.stringify(err)}`);
+    throw new Error(`Telegram API error: ${JSON.stringify(err)}`);
   }
+}
+
+// ─── 3. Google Sheets (runs only if credentials are present) ──────────────
+async function appendToSheet(data: ContactPayload) {
+  const sheetId = process.env.GOOGLE_SHEET_ID;
+  const email   = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  const key     = process.env.GOOGLE_PRIVATE_KEY;
+
+  if (!sheetId || !email || !key) {
+    throw new Error("Google Sheets env vars not configured — skipping.");
+  }
+
+  // Dynamic import so the build doesn't fail if googleapis isn't installed yet
+  const { google } = await import("googleapis");
+
+  const auth = new google.auth.GoogleAuth({
+    credentials: { client_email: email, private_key: key.replace(/\\n/g, "\n") },
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+  });
+
+  const sheets = google.sheets({ version: "v4", auth });
+  const timestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: sheetId,
+    range: "Leads!A:I",
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [[
+        timestamp,
+        data.name,
+        data.email,
+        data.phone || "",
+        data.companyName || "",
+        data.businessType,
+        data.product || "",
+        data.message || "",
+        "New",
+      ]],
+    },
+  });
 }
 
 // ─── Route Handler ─────────────────────────────────────────────────────────
@@ -246,7 +244,6 @@ export async function POST(req: NextRequest) {
   try {
     const body: ContactPayload = await req.json();
 
-    // Basic validation
     if (!body.name?.trim() || !body.email?.trim() || !body.businessType?.trim()) {
       return NextResponse.json(
         { success: false, error: "Name, email and business type are required." },
@@ -254,32 +251,36 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Fire all three in parallel — each failure is caught independently
-    const results = await Promise.allSettled([
+    // Run all three in parallel — each failure is isolated
+    const [gmail, telegram, sheets] = await Promise.allSettled([
       sendGmail(body),
-      appendToSheet(body),
       sendTelegram(body),
+      appendToSheet(body),
     ]);
 
-    const [gmail, sheets, telegram] = results.map((r) => ({
-      ok: r.status === "fulfilled",
-      error: r.status === "rejected" ? (r.reason as Error).message : null,
-    }));
+    const results = { gmail, telegram, sheets };
 
-    // Log any partial failures (visible in Vercel logs)
-    if (!gmail.ok)    console.error("Gmail failed:", gmail.error);
-    if (!sheets.ok)   console.error("Sheets failed:", sheets.error);
-    if (!telegram.ok) console.error("Telegram failed:", telegram.error);
+    // Log partial failures to Vercel logs
+    for (const [key, result] of Object.entries(results)) {
+      if (result.status === "rejected") {
+        console.error(`[contact] ${key} failed:`, result.reason);
+      }
+    }
 
-    // As long as at least one channel worked, return success to the user
-    const anySuccess = gmail.ok || sheets.ok || telegram.ok;
+    // Success if at least Gmail or Telegram worked
+    const coreSuccess = gmail.status === "fulfilled" || telegram.status === "fulfilled";
 
     return NextResponse.json({
-      success: anySuccess,
-      channels: { gmail: gmail.ok, sheets: sheets.ok, telegram: telegram.ok },
-    });
+      success: coreSuccess,
+      channels: {
+        gmail:    gmail.status === "fulfilled",
+        telegram: telegram.status === "fulfilled",
+        sheets:   sheets.status === "fulfilled",
+      },
+    }, { status: coreSuccess ? 200 : 500 });
+
   } catch (err) {
-    console.error("Contact API error:", err);
+    console.error("[contact] Unhandled error:", err);
     return NextResponse.json(
       { success: false, error: "Server error. Please try again." },
       { status: 500 }
