@@ -260,14 +260,16 @@ export async function POST(req: NextRequest) {
 
     const results = { gmail, telegram, sheets };
 
-    // Log partial failures to Vercel logs
+    // Log partial failures to Vercel logs (visible in vercel.com → project → logs)
+    const errors: Record<string, string> = {};
     for (const [key, result] of Object.entries(results)) {
       if (result.status === "rejected") {
-        console.error(`[contact] ${key} failed:`, result.reason);
+        const msg = (result.reason as Error)?.message ?? String(result.reason);
+        console.error(`[contact] ${key} failed:`, msg);
+        errors[key] = msg;
       }
     }
 
-    // Success if at least Gmail or Telegram worked
     const coreSuccess = gmail.status === "fulfilled" || telegram.status === "fulfilled";
 
     return NextResponse.json({
@@ -277,6 +279,8 @@ export async function POST(req: NextRequest) {
         telegram: telegram.status === "fulfilled",
         sheets:   sheets.status === "fulfilled",
       },
+      // errors field helps debug — remove after everything is working
+      errors,
     }, { status: coreSuccess ? 200 : 500 });
 
   } catch (err) {
